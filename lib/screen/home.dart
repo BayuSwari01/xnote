@@ -13,7 +13,27 @@ class _homeState extends State<home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Text("Masuk"),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(bottom: 70),
+              child: Text(
+                "X Note",
+                style: TextStyle(fontSize: 70),
+              ),
+            ),
+            Container(
+                margin: EdgeInsets.all(20),
+                child: ElevatedButton(onPressed: null, child: Text("Note"))),
+            Container(
+                margin: EdgeInsets.all(20),
+                child:
+                    ElevatedButton(onPressed: null, child: Text('Todo list'))),
+          ],
+        ),
+      ),
     );
   }
 }

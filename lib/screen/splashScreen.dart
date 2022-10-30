@@ -37,7 +37,9 @@ class _splashScreenState extends State<splashScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[Text("Loading")],
+          children: <Widget>[
+            Image(image: AssetImage("images/hippopotamus-icon.png"))
+          ],
         ),
       ),
     );
