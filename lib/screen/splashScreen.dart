@@ -34,12 +34,15 @@ class _splashScreenState extends State<splashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Image(image: AssetImage("images/hippopotamus-icon.png"))
-          ],
+      body: Container(
+        color: Color.fromARGB(255, 217, 217, 217),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Image(image: AssetImage("images/hippopotamus-icon.png"))
+            ],
+          ),
         ),
       ),
     );

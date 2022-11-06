@@ -13,25 +13,55 @@ class _homeState extends State<home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(bottom: 70),
-              child: Text(
-                "X Note",
-                style: TextStyle(fontSize: 70),
+      body: Container(
+        color: Color.fromARGB(255, 217, 217, 217),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.only(bottom: 70),
+                child: Text(
+                  "X Note",
+                  style: TextStyle(fontSize: 70),
+                ),
               ),
-            ),
-            Container(
-                margin: EdgeInsets.all(20),
-                child: ElevatedButton(onPressed: null, child: Text("Note"))),
-            Container(
-                margin: EdgeInsets.all(20),
-                child:
-                    ElevatedButton(onPressed: null, child: Text('Todo list'))),
-          ],
+              Container(
+                  margin: EdgeInsets.all(20),
+                  child: SizedBox(
+                    height: 50,
+                    width: 150,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Color.fromARGB(255, 120, 120, 120)),
+                      onPressed: () {
+                        setState(() {});
+                      },
+                      child: Text(
+                        "Note",
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ),
+                  )),
+              Container(
+                  margin: EdgeInsets.all(20),
+                  child: SizedBox(
+                    height: 50,
+                    width: 150,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Color.fromARGB(255, 120, 120, 120)),
+                      onPressed: () {
+                        setState(() {});
+                      },
+                      child: Text(
+                        'Todo list',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ),
+                  )),
+            ],
+          ),
         ),
       ),
     );
