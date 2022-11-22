@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:x_note/screen/home.dart';
+import 'package:x_note/screen/login.dart';
 
 class splashScreen extends StatefulWidget {
   const splashScreen({super.key});
@@ -25,7 +26,7 @@ class _splashScreenState extends State<splashScreen> {
     return Timer(duration, () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (contex) {
-          return home();
+          return login();
         }),
       );
     });
@@ -39,9 +40,7 @@ class _splashScreenState extends State<splashScreen> {
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Image(image: AssetImage("images/hippopotamus-icon.png"))
-            ],
+            children: <Widget>[Image(image: AssetImage("images/logo1.png"))],
           ),
         ),
       ),
