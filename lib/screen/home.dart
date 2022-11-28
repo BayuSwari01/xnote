@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:x_note/network/api.dart';
 import 'package:x_note/screen/catatan/daftarNote.dart';
+import 'package:x_note/screen/login.dart';
 import 'package:x_note/screen/todoList/daftarTodoList.dart';
 
 class home extends StatefulWidget {
@@ -79,9 +84,11 @@ class _homeState extends State<home> {
                       style:
                           ElevatedButton.styleFrom(backgroundColor: Colors.red),
                       onPressed: () {
-                        setState(() {
-                          Navigator.pop(context);
-                        });
+                        _logout();
+                        Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (context) {
+                          return login();
+                        }));
                       },
                       child: Text(
                         'Log Out',
@@ -94,5 +101,17 @@ class _homeState extends State<home> {
         ),
       ),
     );
+  }
+
+  void _logout() async {
+    var data;
+    var res = await Network().getData(data, '/logout');
+    var body = await jsonDecode(res.body);
+
+    if (body['status']) {
+      SharedPreferences localStorage = await SharedPreferences.getInstance();
+      localStorage.remove('email');
+      localStorage.remove('token');
+    }
   }
 }

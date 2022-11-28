@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:x_note/network/api.dart';
 import 'package:x_note/screen/daftar.dart';
 import 'package:x_note/screen/home.dart';
 
@@ -12,7 +16,23 @@ class login extends StatefulWidget {
 }
 
 class _loginState extends State<login> {
-  TextEditingController username = TextEditingController();
+  TextEditingController email = TextEditingController();
+  TextEditingController password = TextEditingController();
+  bool _isloading = false;
+  bool _secureText = true;
+
+  showHide() {
+    setState(() {
+      _secureText = !_secureText;
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,15 +62,21 @@ class _loginState extends State<login> {
                       borderRadius: BorderRadius.circular(5),
                       borderSide: BorderSide(),
                     ),
-                    labelText: "Username",
+                    labelText: "email",
                   ),
-                  controller: username,
+                  controller: email,
                 ),
               ),
               Container(
                 margin: EdgeInsets.only(left: 30, right: 30, top: 10),
                 child: TextFormField(
                   decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                      onPressed: showHide,
+                      icon: Icon(_secureText
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                    ),
                     fillColor: Color.fromARGB(255, 120, 120, 120),
                     filled: true,
                     enabledBorder: OutlineInputBorder(
@@ -63,7 +89,8 @@ class _loginState extends State<login> {
                     ),
                     labelText: "Password",
                   ),
-                  controller: username,
+                  controller: password,
+                  obscureText: _secureText,
                 ),
               ),
               Container(
@@ -75,22 +102,25 @@ class _loginState extends State<login> {
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Color.fromARGB(255, 120, 120, 120)),
                       onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return home();
-                        }));
+                        _login();
+                        // Navigator.push(context,
+                        //     MaterialPageRoute(builder: (context) {
+                        //   return home();
+                        // }));
                       },
-                      child: Text("Login")),
+                      child: Text(_isloading ? "Processing..." : "Login")),
                 ),
               ),
               Container(
                 margin: EdgeInsets.only(top: 10),
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return daftar();
-                    }));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return daftar();
+                      }),
+                    );
                   },
                   child: Text(
                     "Daftar",
@@ -103,5 +133,54 @@ class _loginState extends State<login> {
         ),
       ),
     );
+  }
+
+  void _login() async {
+    setState(() {
+      _isloading = true;
+    });
+
+    var data = {'email': email.text, 'password': password.text};
+
+    var res = await Network().auth(data, '/login');
+    var body = jsonDecode(res.body);
+
+    if (body['status']) {
+      SharedPreferences localStorage = await SharedPreferences.getInstance();
+      await localStorage.setString('token', jsonEncode(body['token']));
+      await localStorage.setString('email', jsonEncode(body['email']));
+
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return home();
+      }));
+    } else {
+      _showMsg(body['message']);
+    }
+
+    setState(() {
+      _isloading = false;
+    });
+  }
+
+  _showMsg(msg) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(msg),
+            content: const Text('email atau password salah'),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('ok'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
   }
 }

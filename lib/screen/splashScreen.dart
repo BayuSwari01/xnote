@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:x_note/screen/home.dart';
 import 'package:x_note/screen/login.dart';
 
@@ -14,10 +15,13 @@ class splashScreen extends StatefulWidget {
 }
 
 class _splashScreenState extends State<splashScreen> {
+  bool isAuth = false;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _checkIfLoggedIn();
     startSplashScreen();
   }
 
@@ -26,10 +30,27 @@ class _splashScreenState extends State<splashScreen> {
     return Timer(duration, () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (contex) {
-          return login();
+          if (isAuth) {
+            return home();
+          } else {
+            return login();
+          }
         }),
       );
     });
+  }
+
+  //mengecek apakah user mempunyai token untuk login atau tidak
+  void _checkIfLoggedIn() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var token = localStorage.getString('token');
+    if (token != null) {
+      if (mounted) {
+        setState(() {
+          isAuth = true;
+        });
+      }
+    }
   }
 
   @override
