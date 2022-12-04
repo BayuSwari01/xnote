@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:x_note/network/api.dart';
 
 class tambahCatatan extends StatefulWidget {
-  const tambahCatatan({super.key});
+  const tambahCatatan({super.key, this.email});
+  final String? email;
 
   @override
   State<tambahCatatan> createState() => _tambahCatatanState();
@@ -12,6 +16,15 @@ class tambahCatatan extends StatefulWidget {
 class _tambahCatatanState extends State<tambahCatatan> {
   TextEditingController judul = TextEditingController();
   TextEditingController isi = TextEditingController();
+  String? email;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    email = widget.email;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,12 +79,13 @@ class _tambahCatatanState extends State<tambahCatatan> {
                 ),
               ),
               Container(
-                margin: EdgeInsets.only(left: 10, right: 10),
+                margin: EdgeInsets.only(left: 10, right: 10, top: 10),
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromARGB(255, 120, 120, 120)),
                   onPressed: () {
+                    _tambahNote();
                     Navigator.pop(context);
                   },
                   child: Icon(Icons.add),
@@ -81,6 +95,39 @@ class _tambahCatatanState extends State<tambahCatatan> {
           ),
         ),
       ),
+    );
+  }
+
+  void _tambahNote() async {
+    var data = {'email': email, 'judul': judul.text, 'catatan': isi.text};
+
+    var res = await Network().auth(data, '/addNote');
+    var body = jsonDecode(res.body);
+
+    // if (body['status']) {
+    //   _showMsg(body['message'].toString());
+    // }
+  }
+
+  _showMsg(message) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(message.toString()),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

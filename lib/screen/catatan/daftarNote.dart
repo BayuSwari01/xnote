@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:x_note/models/Note.dart';
+import 'package:x_note/network/api.dart';
 import 'package:x_note/screen/catatan/catatan.dart';
 import 'package:x_note/screen/catatan/tambahCatatan.dart';
 import 'package:x_note/screen/catatan/editCatatan.dart';
@@ -13,15 +18,16 @@ class daftarNote extends StatefulWidget {
 }
 
 class _daftarNoteState extends State<daftarNote> {
-  List<String> judul = [
-    "Catetan tugas",
-    "Catetan kerjaan",
-    "Catetan kuliah",
-    "Catetan belanja",
-    "Catetan",
-    "Catetan belanja",
-    "Catetan"
-  ];
+  List<Note> notes = [];
+  String? emailFix;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getNote();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,13 +44,17 @@ class _daftarNoteState extends State<daftarNote> {
             child: Container(
                 child: Wrap(
               children: List<GestureDetector>.generate(
-                  7,
+                  notes.length,
                   (index) => GestureDetector(
-                        onTap: () {
-                          Navigator.push(context,
+                        onTap: () async {
+                          // _getNote();
+                          await Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
-                            return catatan();
+                            return catatan(note: notes[index]);
                           }));
+                          setState(() {
+                            _getNote();
+                          });
                         },
                         child: Container(
                           decoration: BoxDecoration(
@@ -59,14 +69,15 @@ class _daftarNoteState extends State<daftarNote> {
                               Container(
                                 margin: EdgeInsets.only(top: 5),
                                 child: Text(
-                                  judul[index],
+                                  notes[index].judul ?? "404",
                                   style: TextStyle(fontSize: 20),
                                 ),
                               ),
                               Container(
+                                alignment: Alignment.topLeft,
                                 margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
                                 child: Text(
-                                  "isi dari catatan askldj asdjkasjdas alskdjasd asldkasjd asdlkasjd asdlkasjdsa dasldkjas lkasjd asdlksa asdoasdjas,m asldljas asdl;ajsd ",
+                                  notes[index].catatan ?? "404",
                                   maxLines: 5,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -80,14 +91,39 @@ class _daftarNoteState extends State<daftarNote> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return tambahCatatan();
+        onPressed: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return tambahCatatan(
+              email: emailFix,
+            );
           }));
+          setState(() {
+            _getNote();
+          });
         },
         backgroundColor: Color.fromARGB(255, 120, 120, 120),
         child: Icon(Icons.add),
       ),
     );
+  }
+
+  void _getNote() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var email = await localStorage.get('email');
+    emailFix = email.toString().replaceAll('"', '');
+    var data = {'email': email.toString().replaceAll('"', '')};
+    var res = await Network().auth(data, '/getNote');
+    var body = jsonDecode(res.body);
+    setState(() {
+      notes.clear();
+      body['notes'].forEach((note) {
+        notes.add(Note(
+          id: note['id'],
+          email: note['email'],
+          judul: note['judul'],
+          catatan: note['catatan'],
+        ));
+      });
+    });
   }
 }

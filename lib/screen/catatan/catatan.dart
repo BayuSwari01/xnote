@@ -1,17 +1,30 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:x_note/models/Note.dart';
+import 'package:x_note/network/api.dart';
 import 'package:x_note/screen/catatan/editCatatan.dart';
 import 'package:x_note/screen/catatan/tambahCatatan.dart';
 
 class catatan extends StatefulWidget {
-  const catatan({super.key});
+  const catatan({super.key, this.note});
+  final Note? note;
 
   @override
   State<catatan> createState() => _catatanState();
 }
 
 class _catatanState extends State<catatan> {
+  Note? note;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    note = widget.note!;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,14 +50,14 @@ class _catatanState extends State<catatan> {
                       Container(
                         margin: EdgeInsets.all(10),
                         child: Text(
-                          "Judul",
+                          note?.judul ?? "404",
                           style: TextStyle(fontSize: 30),
                         ),
                       ),
                       Container(
+                        alignment: Alignment.topLeft,
                         margin: EdgeInsets.only(left: 5, right: 5, bottom: 30),
-                        child: Text(
-                            "Isi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk awIsi dari catetan awlaejwk awliawe awiakw paw awlk awpk awpk   awpiaw awpaw awpawkaw paw  awpikaw\nawloawkaw awpaw awlawk aw"),
+                        child: Text(note?.catatan ?? "404"),
                       )
                     ],
                   ),
@@ -60,11 +73,14 @@ class _catatanState extends State<catatan> {
                         style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 Color.fromARGB(255, 120, 120, 120)),
-                        onPressed: () {
-                          Navigator.push(context,
+                        onPressed: () async {
+                          await Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
-                            return editCatatan();
+                            return editCatatan(
+                              note: note,
+                            );
                           }));
+                          Navigator.pop(context);
                         },
                         child: Text("Edit"),
                       )),
@@ -76,6 +92,7 @@ class _catatanState extends State<catatan> {
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Color.fromRGBO(120, 120, 120, 1)),
                       onPressed: () {
+                        _hapusNote();
                         Navigator.pop(context);
                       },
                       child: Text("Hapus"),
@@ -88,5 +105,11 @@ class _catatanState extends State<catatan> {
         ),
       ),
     );
+  }
+
+  void _hapusNote() async {
+    var data = {'id': note?.id};
+    var res = await Network().auth(data, '/deleteNote');
+    var body = jsonDecode(res.body);
   }
 }

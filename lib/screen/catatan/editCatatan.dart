@@ -1,17 +1,34 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:x_note/models/Note.dart';
+import 'package:x_note/network/api.dart';
+import 'package:x_note/screen/catatan/daftarNote.dart';
 
 class editCatatan extends StatefulWidget {
-  const editCatatan({super.key});
+  const editCatatan({super.key, this.note});
+  final Note? note;
 
   @override
   State<editCatatan> createState() => _editCatatanState();
 }
 
 class _editCatatanState extends State<editCatatan> {
+  Note? note;
   TextEditingController judul = TextEditingController();
   TextEditingController isi = TextEditingController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    note = widget.note;
+    judul.text = note?.judul ?? '';
+    isi.text = note?.catatan ?? '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,14 +83,19 @@ class _editCatatanState extends State<editCatatan> {
                 ),
               ),
               Container(
-                margin: EdgeInsets.only(left: 10, right: 10),
+                margin: EdgeInsets.only(left: 10, right: 10, top: 10),
                 width: double.infinity,
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromARGB(255, 120, 120, 120),
                     ),
                     onPressed: () {
+                      _editNote();
                       Navigator.pop(context);
+                      // Navigator.pushReplacement(context,
+                      //     MaterialPageRoute(builder: (context) {
+                      //   return daftarNote();
+                      // }));
                     },
                     child: Icon(Icons.add)),
               )
@@ -82,5 +104,11 @@ class _editCatatanState extends State<editCatatan> {
         ),
       ),
     );
+  }
+
+  void _editNote() async {
+    var data = {'id': note?.id, 'judul': judul.text, 'catatan': isi.text};
+    var res = await Network().auth(data, '/editNote');
+    var body = jsonDecode(res.body);
   }
 }
