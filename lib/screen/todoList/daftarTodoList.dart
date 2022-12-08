@@ -1,10 +1,15 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:x_note/models/Todolist.dart';
+import 'package:x_note/network/api.dart';
 import 'package:x_note/screen/catatan/tambahCatatan.dart';
 import 'package:x_note/screen/todoList/editTodoList.dart';
 import 'package:x_note/screen/todoList/tambahTodoList.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
+import 'package:intl/intl.dart';
 
 class daftarTodoList extends StatefulWidget {
   const daftarTodoList({super.key});
@@ -14,7 +19,17 @@ class daftarTodoList extends StatefulWidget {
 }
 
 class _daftarTodoListState extends State<daftarTodoList> {
+  List<Todolist> todolists = [];
+  String? emailFix;
   bool isSelected = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getTodolist();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,9 +58,9 @@ class _daftarTodoListState extends State<daftarTodoList> {
                 ))
               ],
               rows: List<DataRow>.generate(
-                20,
+                todolists.length,
                 (index) => DataRow(
-                  selected: isSelected,
+                  selected: todolists[index].status ?? false,
                   onSelectChanged: (value) {
                     showAdaptiveActionSheet(
                       context: context,
@@ -54,11 +69,20 @@ class _daftarTodoListState extends State<daftarTodoList> {
                           title: Icon(
                             Icons.done,
                             size: 20,
+                            color: Colors.blueAccent,
                           ),
                           onPressed: (context) async {
-                            this.isSelected = true;
+                            int status;
+                            if (todolists[index].status!) {
+                              status = 0;
+                            } else {
+                              status = 1;
+                            }
+                            _editStatusTodolist(todolists[index].id, status);
                             Navigator.pop(context);
-                            setState(() {});
+                            setState(() {
+                              _getTodolist();
+                            });
                           },
                         ),
                         BottomSheetAction(
@@ -70,16 +94,26 @@ class _daftarTodoListState extends State<daftarTodoList> {
                             Navigator.pop(context);
                             await Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
-                              return editTodoList();
+                              return editTodoList(
+                                todo: todolists[index],
+                              );
                             }));
+                            setState(() {
+                              _getTodolist();
+                            });
                           },
                         ),
                         BottomSheetAction(
                           title: Icon(
                             Icons.delete,
                             size: 20,
+                            color: Colors.red,
                           ),
                           onPressed: (context) async {
+                            _delete(todolists[index].id);
+                            setState(() {
+                              _getTodolist();
+                            });
                             Navigator.pop(context);
                           },
                         ),
@@ -97,10 +131,10 @@ class _daftarTodoListState extends State<daftarTodoList> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              "Mengerjakan Tugas",
+                              todolists[index].todo ?? "404",
                               style: TextStyle(fontSize: 20),
                             ),
-                            Text("Tanggal 19 Oktober 2022"),
+                            Text(todolists[index].tanggal.toString()),
                           ],
                         ),
                       ),
@@ -113,14 +147,64 @@ class _daftarTodoListState extends State<daftarTodoList> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return tambahTodoList();
+        onPressed: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return tambahTodoList(
+              email: emailFix,
+            );
           }));
+          setState(() {
+            _getTodolist();
+          });
         },
         backgroundColor: Color.fromARGB(255, 120, 120, 120),
         child: Icon(Icons.add),
       ),
     );
+  }
+
+  void _getTodolist() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var email = await localStorage.get('email');
+    emailFix = email.toString().replaceAll('"', '');
+    var data = {'email': emailFix};
+    var res = await Network().auth(data, '/getTodolist');
+    var body = jsonDecode(res.body);
+
+    setState(() {
+      todolists.clear();
+      body['todolists'].forEach((todolist) {
+        bool flag;
+        if (todolist['status'] == 1) {
+          flag = true;
+        } else {
+          flag = false;
+        }
+
+        todolists.add(Todolist(
+          id: todolist['id'],
+          email: todolist['email'],
+          todo: todolist['todo'],
+          tanggal: DateTime.parse(todolist['tanggal']),
+          status: flag,
+        ));
+      });
+    });
+  }
+
+  void _delete(id) async {
+    var data = {'id': id};
+
+    var res = await Network().auth(data, '/deleteTodolist');
+
+    var body = jsonDecode(res.body);
+  }
+
+  void _editStatusTodolist(id, status) async {
+    var data = {'id': id, 'status': status};
+
+    var res = await Network().auth(data, '/editStatusTodolist');
+
+    var body = jsonDecode(res.body);
   }
 }

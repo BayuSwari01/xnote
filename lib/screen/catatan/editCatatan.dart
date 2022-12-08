@@ -92,10 +92,6 @@ class _editCatatanState extends State<editCatatan> {
                     onPressed: () {
                       _editNote();
                       Navigator.pop(context);
-                      // Navigator.pushReplacement(context,
-                      //     MaterialPageRoute(builder: (context) {
-                      //   return daftarNote();
-                      // }));
                     },
                     child: Icon(Icons.add)),
               )

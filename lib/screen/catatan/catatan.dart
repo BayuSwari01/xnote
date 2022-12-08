@@ -95,7 +95,11 @@ class _catatanState extends State<catatan> {
                         _hapusNote();
                         Navigator.pop(context);
                       },
-                      child: Text("Hapus"),
+                      child: Text(
+                        "Hapus",
+                        style:
+                            TextStyle(color: Color.fromARGB(206, 241, 75, 63)),
+                      ),
                     ),
                   ),
                 ),
